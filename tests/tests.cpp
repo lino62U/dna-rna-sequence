@@ -1,28 +1,33 @@
 #include <gtest/gtest.h>
-#include <iostream>
-#include <filesystem>
-#include "funciones.h"  // tu header con parse_fasta_file, etc.
+#include "funciones.h"  // Aquí van tus funciones: parse_fasta_file, detect_sequence_type, etc.
 
-TEST(FASTAParsingTest, ParsesAndClassifiesCorrectly) {
-    std::string path = "sequences.txt";  // Ruta relativa desde build/
-    
-    std::cout << "Leyendo archivo: " << std::filesystem::absolute(path) << std::endl;
-    if (!std::filesystem::exists(path)) {
-        std::cerr << "Error: El archivo no existe!" << std::endl;
-        FAIL() << "No se encontró el archivo de secuencias: " << path;
-    }
-    
-    auto sequences = parse_fasta_file(path);
+TEST(BasicFunctionsTest, TestParseFastaFile) {
+    // Archivo de prueba con 1 secuencia mínima
+    std::string test_file = "../data/simple_sequences.txt";
+    auto sequences = parse_fasta_file(test_file);
+    ASSERT_EQ(sequences.size(), 1);
+    EXPECT_EQ(sequences[0].id, "seq1");
+    EXPECT_EQ(sequences[0].seq, "ACGT");
+}
 
-    ASSERT_GE(sequences.size(), 2) << "Se esperaban al menos 2 secuencias.";
+TEST(BasicFunctionsTest, TestDetectSequenceType) {
+    EXPECT_EQ(detect_sequence_type("ACGT"), "ADN");
+    EXPECT_EQ(detect_sequence_type("ACGU"), "ARN");
+    EXPECT_EQ(detect_sequence_type("ACDX"), "Proteína");
+    EXPECT_EQ(detect_sequence_type("XYZ"), "Proteína");
+}
 
-    for (const auto& [id, seq] : sequences) {
-        SequenceType type = detect_sequence_type(seq);
-        EXPECT_NE(type, SequenceType::Unknown) << "ID: " << id;
+TEST(BasicFunctionsTest, TestExtractAminoAcids) {
+    auto acids = extract_amino_acids("ARND");
+    ASSERT_EQ(acids.size(), 4);
+    EXPECT_EQ(acids[0], "Alanine");
+    EXPECT_EQ(acids[1], "Arginine");
+    EXPECT_EQ(acids[2], "Asparagine");
+    EXPECT_EQ(acids[3], "Aspartic Acid");
+}
 
-        if (type == SequenceType::Protein) {
-            auto acids = extract_amino_acids(seq);
-            EXPECT_GE(acids.size(), 5) << "ID: " << id << " - No se encontraron suficientes aminoácidos.";
-        }
-    }
+TEST(BasicFunctionsTest, TestTranscribeDnaToRna) {
+    std::string rna = transcribe_dna_to_rna("ATCG");
+    // Según tu función: A->U, T->A, C->G, G->C
+    EXPECT_EQ(rna, "UAGC");
 }
