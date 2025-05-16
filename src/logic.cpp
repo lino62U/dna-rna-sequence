@@ -85,8 +85,8 @@ std::vector<std::string> extract_amino_acids(const std::string& seq) {
     };
 
     std::vector<std::string> proteins;
-    for (size_t i = 0; i + 2 < rna.size(); i += 3) {
-        std::string codon = rna.substr(i, 3);
+    for (size_t i = 0; i + 2 < seq.size(); i += 3) {
+        std::string codon = seq.substr(i, 3);
         if (codon_table.count(codon)) {
             std::string protein = codon_table[codon];
             if (protein == "Stop") break; // Detiene en codón de parada
