@@ -57,21 +57,45 @@ std::string detect_sequence_type(const std::string& seq) {
 }
 
 std::vector<std::string> extract_amino_acids(const std::string& seq) {
-    std::vector<std::string> acids;
-    std::unordered_map<char, std::string> amino_map = {
-        {'A', "Alanine"}, {'R', "Arginine"}, {'N', "Asparagine"}, {'D', "Aspartic Acid"},
-        {'C', "Cysteine"}, {'E', "Glutamic Acid"}, {'Q', "Glutamine"}, {'G', "Glycine"},
-        {'H', "Histidine"}, {'I', "Isoleucine"}, {'L', "Leucine"}, {'K', "Lysine"},
-        {'M', "Methionine"}, {'F', "Phenylalanine"}, {'P', "Proline"}, {'S', "Serine"},
-        {'T', "Threonine"}, {'W', "Tryptophan"}, {'Y', "Tyrosine"}, {'V', "Valine"}
+     std::unordered_map<std::string, std::string> codon_table = {
+        {"UUU", "Phenylalanine"}, {"UUC", "Phenylalanine"},
+        {"UUA", "Leucine"}, {"UUG", "Leucine"},
+        {"CUU", "Leucine"}, {"CUC", "Leucine"}, {"CUA", "Leucine"}, {"CUG", "Leucine"},
+        {"AUU", "Isoleucine"}, {"AUC", "Isoleucine"}, {"AUA", "Isoleucine"},
+        {"AUG", "Methionine"}, // Start codon
+        {"GUU", "Valine"}, {"GUC", "Valine"}, {"GUA", "Valine"}, {"GUG", "Valine"},
+        {"UCU", "Serine"}, {"UCC", "Serine"}, {"UCA", "Serine"}, {"UCG", "Serine"},
+        {"CCU", "Proline"}, {"CCC", "Proline"}, {"CCA", "Proline"}, {"CCG", "Proline"},
+        {"ACU", "Threonine"}, {"ACC", "Threonine"}, {"ACA", "Threonine"}, {"ACG", "Threonine"},
+        {"GCU", "Alanine"}, {"GCC", "Alanine"}, {"GCA", "Alanine"}, {"GCG", "Alanine"},
+        {"UAU", "Tyrosine"}, {"UAC", "Tyrosine"},
+        {"UAA", "Stop"}, {"UAG", "Stop"}, {"UGA", "Stop"}, // Stop codons
+        {"CAU", "Histidine"}, {"CAC", "Histidine"},
+        {"CAA", "Glutamine"}, {"CAG", "Glutamine"},
+        {"AAU", "Asparagine"}, {"AAC", "Asparagine"},
+        {"AAA", "Lysine"}, {"AAG", "Lysine"},
+        {"GAU", "Aspartic Acid"}, {"GAC", "Aspartic Acid"},
+        {"GAA", "Glutamic Acid"}, {"GAG", "Glutamic Acid"},
+        {"UGU", "Cysteine"}, {"UGC", "Cysteine"},
+        {"UGG", "Tryptophan"},
+        {"CGU", "Arginine"}, {"CGC", "Arginine"}, {"CGA", "Arginine"}, {"CGG", "Arginine"},
+        {"AGU", "Serine"}, {"AGC", "Serine"},
+        {"AGA", "Arginine"}, {"AGG", "Arginine"},
+        {"GGU", "Glycine"}, {"GGC", "Glycine"}, {"GGA", "Glycine"}, {"GGG", "Glycine"}
     };
-    for (char c : seq) {
-        char uc = std::toupper(c);
-        if (amino_map.count(uc)) {
-            acids.push_back(amino_map[uc]);
+
+    std::vector<std::string> proteins;
+    for (size_t i = 0; i + 2 < rna.size(); i += 3) {
+        std::string codon = rna.substr(i, 3);
+        if (codon_table.count(codon)) {
+            std::string protein = codon_table[codon];
+            if (protein == "Stop") break; // Detiene en codón de parada
+            proteins.push_back(protein);
+        } else {
+            proteins.push_back("Unknown");
         }
     }
-    return acids;
+    return proteins;
 }
 
 std::string transcribe_dna_to_rna(const std::string& dna) {
